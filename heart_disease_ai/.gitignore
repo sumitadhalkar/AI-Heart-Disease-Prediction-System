@@ -1,0 +1,51 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+.VENV/
+
+# Python packaging
+dist/
+build/
+*.egg-info/
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables and secrets
+.env
+.secrets
+
+# Logs
+logs/
+*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Downloaded datasets and local data artifacts
+data/raw/heart.csv
+
+# Model artifacts (committed for reproducibility)
+models/heart_model.joblib
+
+# Report outputs
+reports/
+tmp/
+temp/
+
+# Test caches
+**/.pytest_cache/
+**/test__*.pyc
+
+# Operating system generated
+.DS_Store
+Thumbs.db

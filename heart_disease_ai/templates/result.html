@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prediction Result</title>
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <section class="result-card">
+      <div class="result-icon {% if 'positive' in result_title.lower() or prediction == 1 %}success{% elif prediction == 0 %}warning{% endif %}">
+        {% if prediction == 1 %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14 9 10.5"></polyline>
+          </svg>
+        {% else %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        {% endif %}
+      </div>
+
+      <h2>{{ result_title }}</h2>
+      <p>{{ result_message }}</p>
+
+      <p class="class-code">Output class: {{ prediction }}</p>
+    </section>
+
+    <section class="notice notice-safety">
+      <strong>Medical limitation</strong>
+      <p>This result is not a diagnosis, a validated risk estimate, or proof that heart disease is present or absent. A qualified healthcare professional must assess any health concerns using appropriate clinical evaluation.</p>
+    </section>
+
+    <a href="{{ url_for('index') }}" class="btn-secondary">
+      ← Return to input form
+    </a>
+  </main>
+</body>
+</html>
