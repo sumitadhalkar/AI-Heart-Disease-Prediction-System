@@ -4,6 +4,8 @@ These tests use synthetic fixtures and do NOT require downloading the real
 UCI dataset. They test software behavior, not medical performance.
 """
 
+import os
+
 import numpy as np
 import pandas as pd
 import joblib
@@ -17,7 +19,7 @@ from sklearn.preprocessing import StandardScaler
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app import app, FEATURES, LIMITS
+from app import app, FEATURES, LIMITS, MODEL_PATH, model_bundle
 
 
 class TestFeatureNamesAndOrder:
@@ -217,6 +219,62 @@ class TestFlaskRoutes:
             }
             response = client.post("/", data=data)
             assert response.status_code == 400  # Validation error
+
+
+class TestHealthEndpoint:
+    """Test that /health accurately reports model availability."""
+
+    def test_health_ok_when_model_loaded(self):
+        """Should return 200 and status 'ok' when the model file exists."""
+        if not MODEL_PATH.exists():
+            return
+        with app.test_client() as client:
+            response = client.get("/health")
+            assert response.status_code == 200
+            assert response.get_json() == {"status": "ok", "model": "loaded"}
+
+    def test_health_degraded_when_model_file_missing(self):
+        """Should return 503 and status 'degraded' when the model file is absent.
+
+        /health re-reads the model straight from disk on every request (unlike
+        the index route, which only checks the in-memory `model_bundle` set at
+        startup), so this has to be tested by removing the file rather than by
+        patching app.model_bundle.
+        """
+        if not MODEL_PATH.exists():
+            return
+        backup_path = MODEL_PATH.with_suffix(".joblib.bak")
+        os.rename(MODEL_PATH, backup_path)
+        try:
+            with app.test_client() as client:
+                response = client.get("/health")
+                assert response.status_code == 503
+                assert response.get_json()["status"] == "degraded"
+        finally:
+            os.rename(backup_path, MODEL_PATH)
+
+
+class TestDatasetInfoRendering:
+    """The home page should reflect the actual loaded model's dataset info.
+
+    Regression test: the template used to hardcode "Cleveland database" and
+    "Instances: 303" regardless of which dataset actually trained the active
+    model, so a model trained with `train_model.py --dataset combined` would
+    render a misleading dataset description.
+    """
+
+    def test_dataset_label_matches_model_bundle(self):
+        if model_bundle is None:
+            return
+        with app.test_client() as client:
+            response = client.get("/")
+            text = response.data.decode("utf-8")
+            label = model_bundle.get(
+                "dataset_label", "UCI Heart Disease Repository (Cleveland database)"
+            )
+            count = model_bundle.get("instance_count", 303)
+            assert label in text
+            assert f"Instances: {count}" in text
 
 
 class TestModelPersistence:
