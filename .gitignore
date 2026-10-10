@@ -33,8 +33,9 @@ logs/
 
 # Downloaded datasets and local data artifacts
 data/raw/heart.csv
+data/raw/heart_combined.csv
 
-# Model artifacts (committed for reproducibility)
+# Model artifacts (regenerate with `python train_model.py`; not committed)
 models/heart_model.joblib
 
 # Report outputs

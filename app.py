@@ -2,6 +2,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+import pandas as pd
 from flask import Flask, render_template, request
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -117,7 +118,7 @@ def index():
             model_bundle=model_bundle,
         ), 400
 
-    row = np.array([[values[f] for f in FEATURES]], dtype=float)
+    row = pd.DataFrame([[values[f] for f in FEATURES]], columns=FEATURES)
     pipeline = model_bundle["pipeline"]
 
     try:

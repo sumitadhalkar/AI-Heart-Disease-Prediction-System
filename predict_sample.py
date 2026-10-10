@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import joblib
+import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "models" / "heart_model.joblib"
@@ -124,7 +125,7 @@ def main():
     print()
 
     # Run the model's actual prediction pipeline
-    row = np.array([[SAMPLE_INPUT[f] for f in FEATURES]], dtype=float)
+    row = pd.DataFrame([[SAMPLE_INPUT[f] for f in FEATURES]], columns=FEATURES)
 
     try:
         prediction = int(pipeline.predict(row)[0])

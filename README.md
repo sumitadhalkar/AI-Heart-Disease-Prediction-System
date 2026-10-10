@@ -45,23 +45,26 @@ The trained model takes 13 health parameters as input and outputs a binary class
 ## Project Structure
 
 ```
-heart_disease_ai/
+AI-Heart-Disease-Prediction-System/
 ├── app.py | Flask backend with input validation, request handling, and prediction pipeline
 ├── train_model.py | Downloads UCI dataset, trains Logistic Regression pipeline, saves model
+├── predict_sample.py | Loads the trained model and runs a documented sample prediction
 ├── requirements.txt | Third-party runtime and training dependencies
 ├── README.md | Project documentation
 ├── .gitignore | Git exclusion patterns
 ├── data/
+│   ├── README.md | Dataset documentation
 │   ├── raw/ | Original UCI dataset (heart.csv + attribute names)
-│   └── processed/ | (Not currently used; raw data used for training)
+│   └── legacy_uci_archive/ | Archived raw UCI FTP mirror, kept for historical reference only (unused by the app)
 ├── models/
 │   └── heart_model.joblib | Trained pipeline (imputer + scaler + LogisticRegression)
 ├── templates/
 │   ├── index.html | Patient input form with categorized groups
 │   └── result.html | Prediction result card with medical limitation notice
-└── static/
-    ├── style.css | Design tokens, responsive layout, component styles
-    └── images/ | (Optional: project icons/illustrations)
+├── static/
+│   └── style.css | Design tokens, responsive layout, component styles
+└── tests/
+    └── test_pipeline.py | Automated test suite (pytest)
 ```
 
 ### Key Files Explained
@@ -81,6 +84,8 @@ heart_disease_ai/
 - **`static/style.css`**: Custom CSS with design tokens (colors, fonts, radii, shadows), responsive grid layouts, focus-visible states, reduced-motion support, and component styles (buttons, cards, notices, form grid, info panels).
 
 - **`data/README.md`**: Documentation of the dataset source, attribute information, preprocessing steps, and licensing.
+
+- **`data/legacy_uci_archive/`**: A raw mirror of the original UCI FTP `heart-disease` directory (Index, WARNING, `*.data` files for Cleveland/Hungarian/Switzerland/Long Beach VA, cost metadata, etc.). Kept for historical/offline reference only — nothing in the application reads from this folder; `train_model.py` fetches the dataset itself via `ucimlrepo`.
 
 ## Dataset
 
@@ -103,7 +108,7 @@ Ensure you have Python 3.11 or 3.12 installed.
 
 ```bash
 git clone https://github.com/your-username/ai-heart-disease-prediction.git
-cd ai-heart-disease-prediction/heart_disease_ai
+cd AI-Heart-Disease-Prediction-System
 ```
 
 ### 3. Create a virtual environment
@@ -135,6 +140,17 @@ python train_model.py
 - *Train the Logistic Regression model*
 - *Save the pipeline to `models/heart_model.joblib`*
 - *Save raw data to `data/raw/heart.csv`*
+- *Save evaluation metrics to `reports/model_evaluation.json` and `reports/model_evaluation.txt`*
+
+Optionally, train on all four original UCI sites (~920 rows) instead of just
+the 303-row Cleveland subset — no download needed, the source files are
+already in `data/legacy_uci_archive/`:
+
+```bash
+python train_model.py --dataset combined
+```
+
+See [`data/README.md`](data/README.md#combined-multi-site-dataset-optional) for details and caveats.
 
 ### 6. Start the Flask server
 
@@ -323,10 +339,8 @@ After running `python train_model.py`, the following files are created in
 `reports/`:
 
 - `model_evaluation.json` - Structured JSON with all metrics, feature names,
-  target definition, test configuration, and the full classification report.
+  target definition, test configuration, confusion matrix, and the full classification report.
 - `model_evaluation.txt` - Human-readable text summary with the same information.
-- `confusion_matrix.png` - (Optional) Generated confusion matrix chart.
-- `roc_curve.png` - (Optional) Generated ROC curve chart when valid scores are available.
 
 ### Health Check
 

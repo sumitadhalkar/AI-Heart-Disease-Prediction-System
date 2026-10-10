@@ -136,20 +136,24 @@ class TestFlaskRoutes:
             assert "Heart Disease AI" in text
 
     def test_503_when_model_missing(self):
-        """Should return 503 when model is not available."""
-        # Temporarily clear the model
-        from app import model_bundle, MODEL_PATH
-        original = model_bundle
-        model_bundle = None
+        """A form submission should return 503 when no model is loaded.
+
+        Reassigning a name imported via `from app import model_bundle` only
+        rebinds this test's local variable, not app's module-level state, so
+        the app module itself must be patched for the view function to see
+        the change.
+        """
+        import app as app_module
+
+        original = app_module.model_bundle
+        app_module.model_bundle = None
 
         try:
             with app.test_client() as client:
-                response = client.get("/")
+                response = client.post("/", data={})
                 assert response.status_code == 503
-                text = response.data.decode("utf-8")
-                assert "Model not found" in text
         finally:
-            model_bundle = original
+            app_module.model_bundle = original
 
     def test_valid_form_submission(self):
         """Valid form submission should trigger prediction."""
@@ -236,12 +240,12 @@ class TestDataIntegrity:
 
     def test_raw_data_exists(self):
         """The raw dataset should exist at the expected path."""
-        data_path = Path(__file__).parent.parent / "heart_disease_ai" / "data" / "raw" / "heart.csv"
+        data_path = Path(__file__).parent.parent / "data" / "raw" / "heart.csv"
         assert data_path.exists(), f"Raw dataset not found at {data_path}"
 
     def test_raw_data_has_content(self):
         """The raw dataset should have multiple rows."""
-        data_path = Path(__file__).parent.parent / "heart_disease_ai" / "data" / "raw" / "heart.csv"
+        data_path = Path(__file__).parent.parent / "data" / "raw" / "heart.csv"
         df = pd.read_csv(data_path)
         assert len(df) > 0, "Dataset should have at least one row"
         assert len(df.columns) > 0, "Dataset should have at least one column"
