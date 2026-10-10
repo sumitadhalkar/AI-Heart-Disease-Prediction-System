@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request
 
+from clinical_reference import build_comparison
+from explanation_service import explain_prediction
+
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "models" / "heart_model.joblib"
 
@@ -147,11 +150,21 @@ def index():
             "training dataset. This does not rule out heart disease."
         )
 
+    comparison, comparison_summary = build_comparison(
+        values, FEATURES, age=values["age"]
+    )
+    explanation = explain_prediction(pipeline, row, FEATURES)
+
     return render_template(
         "result.html",
         result_title=result_title,
         result_message=result_message,
         prediction=prediction,
+        labels=LABELS,
+        age=int(values["age"]),
+        comparison=comparison,
+        comparison_summary=comparison_summary,
+        explanation=explanation,
     )
 
 
@@ -184,3 +197,7 @@ def health():
         "status": status,
         "model": model_status,
     }, code, {"Content-Type": "application/json"}
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)

@@ -29,11 +29,109 @@
       <p>{{ result_message }}</p>
 
       <p class="class-code">Output class: {{ prediction }}</p>
+      {% if explanation %}
+      <p class="class-code">
+        Model internal score for class 1: {{ "%.1f"|format(explanation.probability_class1 * 100) }}%
+        (uncalibrated &mdash; this is the model's raw confidence, not a
+        validated clinical probability; see evaluation metrics on the home page)
+      </p>
+      {% endif %}
     </section>
+
+    {% if explanation %}
+    <section class="result-card">
+      <h3 class="section-title" style="margin-top: 0;">Why Did the Model Produce This Result?</h3>
+      <p>
+        This model is a logistic regression, so its score is an exact sum of
+        each input's contribution. Below are the
+        {{ explanation.top_contributions|length }} inputs that pushed this
+        specific prediction the most, calculated directly from the trained
+        model's coefficients for your submitted values &mdash; not a generic
+        example and not a statement about medical causation.
+      </p>
+
+      <ul class="contribution-list">
+        {% for c in explanation.top_contributions %}
+        <li class="contribution-item contribution-{{ c.direction }}">
+          <span class="contribution-feature">{{ labels.get(c.feature, c.feature) }}</span>
+          <span class="contribution-value">(your value: {{ c.raw_value|round(2) }})</span>
+          <span class="contribution-direction-badge direction-{{ c.direction }}">
+            {% if c.direction == "increases" %}
+              increases the model's score toward class 1
+            {% elif c.direction == "decreases" %}
+              decreases the model's score toward class 1
+            {% else %}
+              negligible effect
+            {% endif %}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <p class="disclaimer-note">
+        These are contributions to <em>this model's</em> internal score for
+        <em>this input</em>, derived mathematically from its fitted
+        coefficients. They are not proof of a causal relationship, not a
+        ranking of general cardiovascular risk factors, and not a
+        clinical diagnosis.
+      </p>
+    </section>
+    {% endif %}
+
+    {% if comparison %}
+    <section class="result-card">
+      <h3 class="section-title" style="margin-top: 0;">What Your Numbers Mean</h3>
+      <p>
+        Below is each value you entered, what it measures, and how it compares
+        to standard adult clinical reference ranges. Age ({{ age }} years) is
+        only used to adjust the maximum-heart-rate comparison (the standard
+        "220 minus age" estimate) &mdash; the other reference ranges are general
+        adult guideline thresholds and do not change with age or sex.
+      </p>
+
+      <p class="comparison-summary">
+        Of {{ comparison_summary.total_judged }} measurements compared against
+        a reference range:
+        <strong class="status-normal">{{ comparison_summary.normal_count }} normal</strong>,
+        <strong class="status-borderline">{{ comparison_summary.borderline_count }} borderline</strong>,
+        <strong class="status-elevated">{{ comparison_summary.elevated_count }} elevated</strong>.
+      </p>
+
+      <div class="comparison-table-wrap">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Measurement</th>
+              <th>Your Value</th>
+              <th>What It Means</th>
+              <th>Reference (healthy adult)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in comparison %}
+            <tr>
+              <td data-label="Measurement">
+                {{ labels.get(row.feature, row.feature) }}
+                {% if row.age_adjusted %}<span class="age-badge">age-adjusted</span>{% endif %}
+              </td>
+              <td data-label="Your Value">{{ row.your_value }}</td>
+              <td data-label="What It Means">{{ row.description }}</td>
+              <td data-label="Reference">{{ row.reference }}</td>
+              <td data-label="Status">
+                <span class="status-badge status-{{ row.status }}">{{ row.status }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
 
     <section class="notice notice-safety">
       <strong>Medical limitation</strong>
-      <p>This result is not a diagnosis, a validated risk estimate, or proof that heart disease is present or absent. A qualified healthcare professional must assess any health concerns using appropriate clinical evaluation.</p>
+      <p>This result is not a diagnosis, a validated risk estimate, or proof that heart disease is present or absent. The comparison above uses general adult clinical guideline thresholds, not a personalized risk assessment &mdash; it does not account for medications, other conditions, or individual variation. A qualified healthcare professional must assess any health concerns using appropriate clinical evaluation.</p>
     </section>
 
     <a href="{{ url_for('index') }}" class="btn-secondary">

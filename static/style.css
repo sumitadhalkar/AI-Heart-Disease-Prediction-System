@@ -443,6 +443,148 @@ select.form-control option {
   height: 20px;
 }
 
+/* Feature contribution list (result page) */
+.contribution-list {
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contribution-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--border);
+  background: var(--light);
+  font-size: 0.88rem;
+}
+
+.contribution-item.contribution-increases {
+  border-left-color: var(--danger);
+}
+
+.contribution-item.contribution-decreases {
+  border-left-color: var(--success);
+}
+
+.contribution-feature {
+  font-weight: 650;
+}
+
+.contribution-value {
+  color: var(--secondary);
+}
+
+.contribution-direction-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.direction-increases {
+  color: #a4232f;
+  background: #fbe3e5;
+}
+
+.direction-decreases {
+  color: #1e7a34;
+  background: #e5f6e9;
+}
+
+.direction-negligible {
+  color: var(--secondary);
+  background: #eef1f5;
+}
+
+.disclaimer-note {
+  font-size: 0.8rem;
+  color: var(--secondary);
+}
+
+/* Comparison table (result page) */
+.comparison-summary {
+  font-size: 0.9rem;
+}
+
+.comparison-table-wrap {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.comparison-table th {
+  color: var(--secondary);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.age-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: #e8f0fe;
+  border-radius: var(--radius-sm);
+  vertical-align: middle;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.status-badge.status-normal,
+.status-normal {
+  color: #1e7a34;
+  background: #e5f6e9;
+}
+
+.status-badge.status-borderline,
+.status-borderline {
+  color: #8a6400;
+  background: #fff3cd;
+}
+
+.status-badge.status-elevated,
+.status-elevated {
+  color: #a4232f;
+  background: #fbe3e5;
+}
+
+.status-badge.status-info {
+  color: var(--secondary);
+  background: var(--light);
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   body {

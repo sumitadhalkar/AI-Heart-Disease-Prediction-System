@@ -20,6 +20,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app import app, FEATURES, LIMITS, MODEL_PATH, model_bundle
+from explanation_service import explain_prediction, supports_explanation
 
 
 class TestFeatureNamesAndOrder:
@@ -121,6 +122,91 @@ class TestSyntheticModelTraining:
             os.remove(model_path)
 
 
+class TestExplanationService:
+    """Test the model-faithful logistic regression contribution breakdown.
+
+    Uses a synthetic pipeline (not the real trained model) with a known
+    coefficient vector, so contribution signs and magnitudes can be checked
+    exactly rather than just "it runs without error".
+    """
+
+    @staticmethod
+    def _make_pipeline_and_row():
+        rng = np.random.RandomState(0)
+        X = pd.DataFrame(rng.rand(60, len(FEATURES)) * 10, columns=FEATURES)
+        y = (X["ca"] + X["thal"] - X["cp"] > 10).astype(int)
+
+        pipeline = Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("classifier", LogisticRegression(max_iter=1000, random_state=0)),
+        ])
+        pipeline.fit(X, y)
+
+        row = X.iloc[[0]]
+        return pipeline, row
+
+    def test_explanation_matches_pipeline_probability(self):
+        """The manually-derived probability must equal predict_proba exactly."""
+        pipeline, row = self._make_pipeline_and_row()
+        explanation = explain_prediction(pipeline, row, FEATURES)
+
+        assert explanation is not None
+        expected = pipeline.predict_proba(row)[0, 1]
+        assert abs(explanation["probability_class1"] - expected) < 1e-9
+
+    def test_contributions_sum_to_logit(self):
+        """intercept + sum(all contributions) must equal the reported logit."""
+        pipeline, row = self._make_pipeline_and_row()
+        explanation = explain_prediction(pipeline, row, FEATURES)
+
+        total = explanation["intercept"] + sum(
+            c["contribution"] for c in explanation["contributions"]
+        )
+        assert abs(total - explanation["logit"]) < 1e-9
+
+    def test_top_contributions_sorted_by_magnitude(self):
+        """top_contributions must be sorted by |contribution| descending."""
+        pipeline, row = self._make_pipeline_and_row()
+        explanation = explain_prediction(pipeline, row, FEATURES, top_n=5)
+
+        assert len(explanation["top_contributions"]) == 5
+        magnitudes = [abs(c["contribution"]) for c in explanation["top_contributions"]]
+        assert magnitudes == sorted(magnitudes, reverse=True)
+        assert explanation["contributions"][0] == explanation["top_contributions"][0]
+
+    def test_direction_matches_contribution_sign(self):
+        """A positive contribution must be labeled 'increases', negative 'decreases'."""
+        pipeline, row = self._make_pipeline_and_row()
+        explanation = explain_prediction(pipeline, row, FEATURES)
+
+        for c in explanation["contributions"]:
+            if c["contribution"] > 1e-9:
+                assert c["direction"] == "increases"
+            elif c["contribution"] < -1e-9:
+                assert c["direction"] == "decreases"
+            else:
+                assert c["direction"] == "negligible"
+
+    def test_no_explanation_for_unsupported_classifier(self):
+        """A non-linear classifier (no coef_) must not produce a fabricated explanation."""
+        from sklearn.tree import DecisionTreeClassifier
+
+        rng = np.random.RandomState(0)
+        X = pd.DataFrame(rng.rand(30, len(FEATURES)), columns=FEATURES)
+        y = rng.randint(0, 2, 30)
+
+        pipeline = Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("classifier", DecisionTreeClassifier(random_state=0)),
+        ])
+        pipeline.fit(X, y)
+
+        assert supports_explanation(pipeline) is False
+        assert explain_prediction(pipeline, X.iloc[[0]], FEATURES) is None
+
+
 class TestFlaskRoutes:
     """Test Flask application routes and response behavior."""
 
@@ -181,6 +267,26 @@ class TestFlaskRoutes:
             assert response.status_code != 400
             # Should be 200 or 500 (prediction result)
             assert response.status_code in [200, 500]
+
+    def test_valid_submission_shows_model_explanation(self):
+        """A successful prediction should render the contribution breakdown.
+
+        The real model (Cleveland or combined) is logistic regression, so
+        explain_prediction() always succeeds for it -- this is a regression
+        test for that section actually appearing on the result page.
+        """
+        with app.test_client() as client:
+            data = {
+                "age": "50", "sex": "1", "cp": "1", "trestbps": "120",
+                "chol": "200", "fbs": "0", "restecg": "0", "thalach": "150",
+                "exang": "0", "oldpeak": "1.0", "slope": "1", "ca": "0", "thal": "3",
+            }
+            response = client.post("/", data=data)
+            if response.status_code != 200:
+                return  # model unavailable in this environment
+            text = response.data.decode("utf-8")
+            assert "Why Did the Model Produce This Result?" in text
+            assert "Model internal score for class 1" in text
 
     def test_invalid_age_rejected(self):
         """Non-numeric age should be rejected."""
