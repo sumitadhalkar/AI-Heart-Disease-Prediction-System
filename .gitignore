@@ -37,6 +37,7 @@ data/raw/heart_combined.csv
 
 # Model artifacts (regenerate with `python train_model.py`; not committed)
 models/heart_model.joblib
+models/heart_model_combined.joblib
 
 # Report outputs
 reports/

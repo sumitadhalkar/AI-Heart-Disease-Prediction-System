@@ -27,17 +27,28 @@ from sklearn.preprocessing import StandardScaler
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
-PROCESSED_DATA_DIR = DATA_DIR / "processed"
 LEGACY_ARCHIVE_DIR = DATA_DIR / "legacy_uci_archive"
 MODEL_DIR = BASE_DIR / "models"
-MODEL_PATH = MODEL_DIR / "heart_model.joblib"
 REPORTS_DIR = BASE_DIR / "reports"
+
+# app.py always loads models/heart_model.joblib (the default, Cleveland-only
+# model). Non-default dataset variants are saved under their own filenames so
+# they never silently replace the model the app is actually serving.
+DEFAULT_DATASET = "cleveland"
 
 FEATURES = [
     "age", "sex", "cp", "trestbps", "chol", "fbs",
     "restecg", "thalach", "exang", "oldpeak",
     "slope", "ca", "thal",
 ]
+
+DATASET_LABELS = {
+    "cleveland": "UCI Heart Disease Repository (Cleveland database)",
+    "combined": (
+        "UCI Heart Disease Repository "
+        "(Cleveland, Hungarian, Switzerland, Long Beach VA - combined)"
+    ),
+}
 
 # The four site files that make up the UCI Heart Disease archive. Each one
 # uses the same 14-column schema (13 features + num) with "?" for missing
@@ -118,14 +129,24 @@ def main():
     parser.add_argument(
         "--dataset",
         choices=["cleveland", "combined"],
-        default="cleveland",
+        default=DEFAULT_DATASET,
         help=(
-            "'cleveland' (default): 303-row Cleveland subset via ucimlrepo. "
+            "'cleveland' (default): 303-row Cleveland subset via ucimlrepo, "
+            "saved to models/heart_model.joblib (the model app.py serves). "
             "'combined': all four UCI sites (~920 rows, noisier, more missing "
-            "data) from data/legacy_uci_archive/."
+            "data) from data/legacy_uci_archive/, saved to "
+            "models/heart_model_combined.joblib so it never replaces the "
+            "default model app.py loads."
         ),
     )
     args = parser.parse_args()
+
+    # Non-default variants get their own filenames so a run never silently
+    # overwrites the model/reports that app.py and predict_sample.py expect.
+    suffix = "" if args.dataset == DEFAULT_DATASET else f"_{args.dataset}"
+    model_path = MODEL_DIR / f"heart_model{suffix}.joblib"
+    eval_json_path = REPORTS_DIR / f"model_evaluation{suffix}.json"
+    eval_txt_path = REPORTS_DIR / f"model_evaluation{suffix}.txt"
 
     if args.dataset == "combined":
         X, y = load_combined_dataset()
@@ -222,6 +243,8 @@ def main():
     evaluation = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "dataset_source": args.dataset,
+        "dataset_label": DATASET_LABELS[args.dataset],
+        "instance_count": len(X),
         "features": FEATURES,
         "target_definition": "Original UCI target 0 versus target values 1-4",
         "test_size": 0.20,
@@ -240,11 +263,12 @@ def main():
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    with open(REPORTS_DIR / "model_evaluation.json", "w", encoding="utf-8") as f:
+    with open(eval_json_path, "w", encoding="utf-8") as f:
         json.dump(evaluation, f, indent=2)
 
-    with open(REPORTS_DIR / "model_evaluation.txt", "w", encoding="utf-8") as f:
+    with open(eval_txt_path, "w", encoding="utf-8") as f:
         f.write("AI Heart Disease Prediction System - Model Evaluation\n")
+        f.write(f"Dataset: {evaluation['dataset_label']}\n")
         f.write(f"Generated at: {evaluation['generated_at']}\n")
         f.write(f"Test set size: {evaluation['test_set_size']}\n\n")
         f.write(f"Accuracy:  {accuracy:.3f}\n")
@@ -258,7 +282,7 @@ def main():
         f.write("\nClassification report:\n")
         f.write(report_text)
 
-    print(f"\nEvaluation reports saved to: {REPORTS_DIR}")
+    print(f"\nEvaluation reports saved to: {eval_json_path} and {eval_txt_path}")
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -268,16 +292,23 @@ def main():
             "pipeline": model,
             "features": FEATURES,
             "dataset_source": args.dataset,
+            "dataset_label": DATASET_LABELS[args.dataset],
+            "instance_count": len(X),
             "target_definition": (
                 "Original UCI target 0 versus target values 1-4"
             ),
             "test_size": 0.20,
             "random_state": 42,
         },
-        MODEL_PATH,
+        model_path,
     )
 
-    print(f"\nModel saved to: {MODEL_PATH}")
+    print(f"\nModel saved to: {model_path}")
+    if args.dataset != DEFAULT_DATASET:
+        print(
+            f"Note: this is a '{args.dataset}' model, saved separately from "
+            f"the default models/heart_model.joblib that app.py loads."
+        )
 
 
 if __name__ == "__main__":

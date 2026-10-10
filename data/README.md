@@ -45,6 +45,12 @@ sites (Cleveland, Hungarian, Switzerland, Long Beach VA — ~920 rows combined)
 instead of just the 303-row Cleveland subset. The source files already live in
 `legacy_uci_archive/`, so no download is needed for this option.
 
+This saves to `models/heart_model_combined.joblib` and
+`reports/model_evaluation_combined.{json,txt}` — separate filenames from the
+default run, so it never overwrites the model `app.py` actually serves. The
+app always loads `models/heart_model.joblib`; using the combined model would
+require pointing `app.py`'s `MODEL_PATH` at it manually.
+
 This dataset is noisier and has far more missing values per feature (especially
 `ca` and `thal` outside Cleveland), so held-out accuracy is typically lower than
 the Cleveland-only model (~80% vs. ~87%) despite the larger sample size. One

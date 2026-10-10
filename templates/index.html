@@ -218,8 +218,8 @@
             </svg>
           </div>
           <h4>Dataset</h4>
-          <p>UCI Heart Disease Repository (Cleveland database)</p>
-          <p>Instances: 303 | Features: 13</p>
+          <p>{{ model_bundle.get('dataset_label', 'UCI Heart Disease Repository (Cleveland database)') }}</p>
+          <p>Instances: {{ model_bundle.get('instance_count', 303) }} | Features: {{ model_bundle.get('features', [])|length or 13 }}</p>
         </div>
 
         <div class="info-card">
