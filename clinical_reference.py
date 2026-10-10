@@ -41,13 +41,54 @@ def predicted_max_heart_rate(age):
     return 220 - age
 
 
-def _entry(description, your_value, reference, status, age_adjusted=False):
+STATUS_COLOR_VAR = {
+    "normal": "var(--success)",
+    "borderline": "var(--warning)",
+    "elevated": "var(--danger)",
+}
+
+
+def _gauge(value, scale_min, scale_max, zone_bounds):
+    """Build a horizontal mini-gauge for a continuous numeric feature.
+
+    `zone_bounds` is a list of (upper_value, status) pairs in ascending
+    order of `upper_value`, covering [scale_min, scale_max]. Used only for
+    the visual track/marker -- never for the actual normal/borderline/
+    elevated decision, which is computed exactly in evaluate_feature().
+    """
+    span = scale_max - scale_min
+    marker_pct = max(0.0, min(100.0, (value - scale_min) / span * 100))
+
+    stops = []
+    prev_pct = 0.0
+    for upper_value, status in zone_bounds:
+        upper_pct = max(0.0, min(100.0, (upper_value - scale_min) / span * 100))
+        color = STATUS_COLOR_VAR[status]
+        stops.append(f"{color} {prev_pct:.1f}%")
+        stops.append(f"{color} {upper_pct:.1f}%")
+        prev_pct = upper_pct
+    track_gradient = f"linear-gradient(to right, {', '.join(stops)})"
+
+    return {
+        "scale_min": scale_min,
+        "scale_max": scale_max,
+        "marker_pct": round(marker_pct, 1),
+        "track_gradient": track_gradient,
+    }
+
+
+def _entry(
+    description, your_value, reference, status,
+    age_adjusted=False, group="profile", gauge=None,
+):
     return {
         "description": description,
         "your_value": your_value,
         "reference": reference,
         "status": status,
         "age_adjusted": age_adjusted,
+        "group": group,
+        "gauge": gauge,
     }
 
 
@@ -62,6 +103,7 @@ def evaluate_feature(feature, value, age):
             f"{int(value)} years",
             "Used below to estimate your age-predicted maximum heart rate.",
             "info",
+            group="profile",
         )
 
     if feature == "sex":
@@ -70,6 +112,7 @@ def evaluate_feature(feature, value, age):
             SEX_LABELS.get(int(value), str(value)),
             "Not evaluated as normal/abnormal.",
             "info",
+            group="profile",
         )
 
     if feature == "cp":
@@ -80,6 +123,7 @@ def evaluate_feature(feature, value, age):
             CP_LABELS.get(code, str(value)),
             "No chest pain (asymptomatic) is the reference/healthy pattern.",
             status,
+            group="symptoms",
         )
 
     if feature == "trestbps":
@@ -91,11 +135,16 @@ def evaluate_feature(feature, value, age):
             status, ref = "elevated", "High (stage 1): 130-139 mmHg"
         else:
             status, ref = "elevated", "High (stage 2): 140 mmHg or above"
+        gauge = _gauge(value, 80, 200, [
+            (120, "normal"), (130, "borderline"), (200, "elevated"),
+        ])
         return _entry(
             "Resting blood pressure, measured in mmHg.",
             f"{value:g} mmHg",
             ref,
             status,
+            group="vitals",
+            gauge=gauge,
         )
 
     if feature == "chol":
@@ -105,11 +154,16 @@ def evaluate_feature(feature, value, age):
             status, ref = "borderline", "Borderline high: 200-239 mg/dL"
         else:
             status, ref = "elevated", "High: 240 mg/dL or above"
+        gauge = _gauge(value, 100, 350, [
+            (200, "normal"), (240, "borderline"), (350, "elevated"),
+        ])
         return _entry(
             "Serum cholesterol level, measured in mg/dL.",
             f"{value:g} mg/dL",
             ref,
             status,
+            group="vitals",
+            gauge=gauge,
         )
 
     if feature == "fbs":
@@ -120,6 +174,7 @@ def evaluate_feature(feature, value, age):
             FBS_LABELS.get(code, str(value)),
             "120 mg/dL or below is the reference/healthy range.",
             status,
+            group="vitals",
         )
 
     if feature == "restecg":
@@ -130,6 +185,7 @@ def evaluate_feature(feature, value, age):
             RESTECG_LABELS.get(code, str(value)),
             "A normal resting ECG is the reference/healthy result.",
             status,
+            group="cardiac_test",
         )
 
     if feature == "thalach":
@@ -141,6 +197,9 @@ def evaluate_feature(feature, value, age):
             status = "borderline"
         else:
             status = "elevated"
+        gauge = _gauge(pct, 40, 120, [
+            (70, "elevated"), (90, "borderline"), (120, "normal"),
+        ])
         return _entry(
             "Maximum heart rate achieved during exercise.",
             f"{value:g} bpm ({pct:.0f}% of predicted max)",
@@ -149,6 +208,8 @@ def evaluate_feature(feature, value, age):
             f"is generally considered a good exercise response.",
             status,
             age_adjusted=True,
+            group="cardiac_test",
+            gauge=gauge,
         )
 
     if feature == "exang":
@@ -159,6 +220,7 @@ def evaluate_feature(feature, value, age):
             EXANG_LABELS.get(code, str(value)),
             "No exercise-induced angina is the reference/healthy result.",
             status,
+            group="symptoms",
         )
 
     if feature == "oldpeak":
@@ -168,12 +230,17 @@ def evaluate_feature(feature, value, age):
             status, ref = "borderline", "Mild: above 0, below 2"
         else:
             status, ref = "elevated", "Significant: 2 or above"
+        gauge = _gauge(value, 0, 6, [
+            (0.3, "normal"), (2, "borderline"), (6, "elevated"),
+        ])
         return _entry(
             "ST depression induced by exercise relative to rest -- a "
             "marker used to detect reduced blood flow to the heart.",
             f"{value:g}",
             ref,
             status,
+            group="cardiac_test",
+            gauge=gauge,
         )
 
     if feature == "slope":
@@ -185,6 +252,7 @@ def evaluate_feature(feature, value, age):
             "An upsloping segment is the reference/healthy pattern; "
             "downsloping is most associated with reduced blood flow.",
             status,
+            group="cardiac_test",
         )
 
     if feature == "ca":
@@ -200,6 +268,7 @@ def evaluate_feature(feature, value, age):
             f"{code}",
             "0 vessels showing blockage is the reference/healthy result.",
             status,
+            group="cardiac_test",
         )
 
     if feature == "thal":
@@ -210,6 +279,7 @@ def evaluate_feature(feature, value, age):
             THAL_LABELS.get(code, str(value)),
             "A normal result is the reference/healthy result.",
             status,
+            group="cardiac_test",
         )
 
     return _entry("", str(value), "", "info")
@@ -242,3 +312,67 @@ def build_comparison(values, features, age):
     }
 
     return rows, summary
+
+
+# Generic, non-prescriptive talking points for flagged measurements. These
+# only ever suggest discussing a result with a doctor -- never a specific
+# treatment, dose, or diagnosis.
+_TALKING_POINTS = {
+    "trestbps": ("Blood Pressure", "Your resting blood pressure reading is above the desirable range. Ask your doctor whether follow-up monitoring or further evaluation is appropriate."),
+    "chol": ("Cholesterol", "Your cholesterol reading is above the desirable range. Ask your doctor about lipid management and whether further testing is needed."),
+    "fbs": ("Blood Sugar", "Your fasting blood sugar reading is above 120 mg/dL. Ask your doctor about screening for diabetes or prediabetes."),
+    "cp": ("Chest Pain", "Describe the chest pain pattern you reported in detail to your doctor, including when it occurs and how long it lasts."),
+    "exang": ("Exercise-Induced Angina", "Chest pain during exercise should be discussed with your doctor, especially if it is new or worsening."),
+    "restecg": ("Resting ECG", "Your resting ECG showed a finding other than normal. Ask your doctor to review this result with you."),
+    "thalach": ("Exercise Capacity", "Your measured maximum heart rate was notably below the age-predicted estimate. Ask your doctor whether this needs follow-up."),
+    "oldpeak": ("ST Depression (Oldpeak)", "This exercise-test finding can indicate reduced blood flow during exertion. Ask your doctor to explain what this result means for you."),
+    "slope": ("ST Segment Slope", "This exercise-test pattern is one of several findings used to assess blood flow. Discuss it with your doctor alongside your other results."),
+    "ca": ("Vessels Shown by Fluoroscopy", "This imaging finding should be reviewed with your doctor or cardiologist as part of your overall evaluation."),
+    "thal": ("Thalassemia Test Result", "This result is outside the normal pattern. Ask your doctor or cardiologist to explain what it means in your case."),
+}
+
+_PRIORITY_BY_STATUS = {"elevated": 3, "borderline": 2}
+
+
+def build_talking_points(rows, max_items=6):
+    """Build a short, generic "talk to your doctor about" list from the
+    comparison rows. Only ever suggests discussing a result with a doctor --
+    never a specific treatment, dose, or diagnosis. Always leads with a
+    fixed urgent-symptom safety note regardless of what was flagged.
+    """
+    points = [
+        {
+            "label": "Urgent Symptoms",
+            "priority": 4,
+            "note": (
+                "If you are currently experiencing chest pain, severe "
+                "shortness of breath, or fainting, seek urgent medical care "
+                "immediately -- do not wait based on this or any automated "
+                "result."
+            ),
+        }
+    ]
+
+    for row in rows:
+        mapping = _TALKING_POINTS.get(row["feature"])
+        priority = _PRIORITY_BY_STATUS.get(row["status"])
+        if mapping is None or priority is None:
+            continue
+        label, note = mapping
+        points.append({"label": label, "priority": priority, "note": note})
+
+    if len(points) == 1:
+        points.append(
+            {
+                "label": "Keep It Up",
+                "priority": 1,
+                "note": (
+                    "None of the measurements compared above fell outside "
+                    "the reference range used here. Continue regular "
+                    "checkups with your doctor."
+                ),
+            }
+        )
+
+    points.sort(key=lambda p: p["priority"], reverse=True)
+    return points[:max_items]

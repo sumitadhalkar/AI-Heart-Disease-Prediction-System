@@ -443,34 +443,242 @@ select.form-control option {
   height: 20px;
 }
 
-/* Feature contribution list (result page) */
-.contribution-list {
-  list-style: none;
-  margin: 16px 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.disclaimer-note {
+  font-size: 0.8rem;
+  color: var(--secondary);
 }
 
-.contribution-item {
+.comparison-summary {
+  font-size: 0.9rem;
+}
+
+/* Report page container is a bit wider than the form page */
+.container.report {
+  max-width: 1080px;
+}
+
+/* Top stat strip */
+.stat-strip {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  border-left: 4px solid var(--border);
-  background: var(--light);
-  font-size: 0.88rem;
+  gap: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 0;
+  margin: 24px 0;
 }
 
-.contribution-item.contribution-increases {
+.stat-box {
+  flex: 1 1 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 24px;
+  border-left: 1px solid var(--border);
+}
+
+.stat-box:first-child {
+  border-left: 0;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--secondary);
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Hero card: result + gauge */
+.hero-grid {
+  display: grid;
+  gap: 28px;
+}
+
+@media (min-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+  }
+}
+
+.result-card .result-icon.danger svg {
+  stroke: var(--danger);
+}
+
+.hero-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+/* Circular score ring via conic-gradient donut trick */
+.score-ring {
+  --ring-color: var(--secondary);
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(
+    var(--ring-color) calc(var(--pct) * 1%),
+    var(--border) 0
+  );
+}
+
+.score-ring.score-tier-low {
+  --ring-color: var(--success);
+}
+
+.score-ring.score-tier-moderate {
+  --ring-color: var(--warning);
+}
+
+.score-ring.score-tier-high {
+  --ring-color: var(--danger);
+}
+
+.score-ring-inner {
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-ring-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.score-ring-caption {
+  font-size: 0.7rem;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.score-tier-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+.score-tier-badge.score-tier-low,
+.score-tier-low {
+  color: #1e7a34;
+  background: #e5f6e9;
+}
+
+.score-tier-badge.score-tier-moderate,
+.score-tier-moderate {
+  color: #8a6400;
+  background: #fff3cd;
+}
+
+.score-tier-badge.score-tier-high,
+.score-tier-high {
+  color: #a4232f;
+  background: #fbe3e5;
+}
+
+/* Horizontal low/moderate/high risk meter */
+.risk-meter {
+  width: 100%;
+  max-width: 260px;
+  margin-top: 6px;
+}
+
+.risk-meter-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--success) 0%,
+    var(--success) 33%,
+    var(--warning) 33%,
+    var(--warning) 66%,
+    var(--danger) 66%,
+    var(--danger) 100%
+  );
+}
+
+.risk-meter-pointer {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 18px;
+  background: #182230;
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.risk-meter-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--secondary);
+  margin-top: 4px;
+}
+
+/* Feature contribution cards (result page) */
+.contribution-grid {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+@media (min-width: 640px) {
+  .contribution-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.contribution-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--border);
+  background: var(--light);
+}
+
+.contribution-card.contribution-increases {
   border-left-color: var(--danger);
 }
 
-.contribution-item.contribution-decreases {
+.contribution-card.contribution-decreases {
   border-left-color: var(--success);
+}
+
+.contribution-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.contribution-increases .contribution-arrow {
+  color: var(--danger);
+}
+
+.contribution-decreases .contribution-arrow {
+  color: var(--success);
 }
 
 .contribution-feature {
@@ -479,65 +687,200 @@ select.form-control option {
 
 .contribution-value {
   color: var(--secondary);
-}
-
-.contribution-direction-badge {
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 999px;
-}
-
-.direction-increases {
-  color: #a4232f;
-  background: #fbe3e5;
-}
-
-.direction-decreases {
-  color: #1e7a34;
-  background: #e5f6e9;
-}
-
-.direction-negligible {
-  color: var(--secondary);
-  background: #eef1f5;
-}
-
-.disclaimer-note {
-  font-size: 0.8rem;
-  color: var(--secondary);
-}
-
-/* Comparison table (result page) */
-.comparison-summary {
-  font-size: 0.9rem;
-}
-
-.comparison-table-wrap {
-  overflow-x: auto;
-  margin-top: 16px;
-}
-
-.comparison-table {
-  width: 100%;
-  border-collapse: collapse;
   font-size: 0.85rem;
 }
 
-.comparison-table th,
-.comparison-table td {
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
+.contribution-direction-text {
+  font-size: 0.82rem;
+  margin-top: 2px;
 }
 
-.comparison-table th {
-  color: var(--secondary);
-  font-size: 0.72rem;
+/* Measurement insight cards (replaces a plain table) */
+.insight-group-title {
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-weight: 600;
+  font-weight: 700;
+  margin: 20px 0 10px;
+  padding-left: 10px;
+  border-left: 4px solid var(--border);
+}
+
+.insight-group-title.status-elevated {
+  border-left-color: var(--danger);
+  color: #a4232f;
+}
+
+.insight-group-title.status-borderline {
+  border-left-color: var(--warning);
+  color: #8a6400;
+}
+
+.insight-group-title.status-normal {
+  border-left-color: var(--success);
+  color: #1e7a34;
+}
+
+.insight-group-title.status-info {
+  border-left-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.measurement-grid {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 640px) {
+  .measurement-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .measurement-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.measurement-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  border-top: 4px solid var(--border);
+}
+
+.measurement-card.status-border-normal {
+  border-top-color: var(--success);
+}
+
+.measurement-card.status-border-borderline {
+  border-top-color: var(--warning);
+}
+
+.measurement-card.status-border-elevated {
+  border-top-color: var(--danger);
+}
+
+.measurement-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.measurement-card-header .card-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.measurement-label {
+  font-weight: 650;
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.measurement-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.measurement-description,
+.measurement-reference {
+  font-size: 0.8rem;
+  color: var(--secondary);
+  margin: 4px 0;
+}
+
+/* Mini range gauge inside a measurement card */
+.mini-gauge {
+  margin: 10px 0;
+}
+
+.mini-gauge-track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.mini-gauge-marker {
+  position: absolute;
+  top: -3px;
+  width: 3px;
+  height: 12px;
+  background: #182230;
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+/* Talk-to-your-doctor list */
+.talking-point-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.talking-point-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--light);
+  border-left: 4px solid var(--border);
+}
+
+.talking-point-item .card-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.talking-point-item.priority-4,
+.talking-point-item.priority-3 {
+  border-left-color: var(--danger);
+}
+
+.talking-point-item.priority-4 .card-icon,
+.talking-point-item.priority-3 .card-icon {
+  color: var(--danger);
+}
+
+.talking-point-item.priority-2 {
+  border-left-color: var(--warning);
+}
+
+.talking-point-item.priority-2 .card-icon {
+  color: #8a6400;
+}
+
+.talking-point-item.priority-1 {
+  border-left-color: var(--success);
+}
+
+.talking-point-item.priority-1 .card-icon {
+  color: var(--success);
+}
+
+.talking-point-label {
+  font-weight: 650;
+  font-size: 0.9rem;
+}
+
+.talking-point-note {
+  font-size: 0.83rem;
+  color: var(--secondary);
+  margin-top: 2px;
 }
 
 .age-badge {
@@ -613,6 +956,25 @@ select.form-control option {
   }
 
   .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-strip {
+    flex-direction: column;
+  }
+
+  .stat-box {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+
+  .stat-box:first-child {
+    border-top: 0;
+  }
+
+  .contribution-grid,
+  .measurement-grid {
     grid-template-columns: 1fr;
   }
 }

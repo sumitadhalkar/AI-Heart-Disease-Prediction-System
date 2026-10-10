@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request
 
-from clinical_reference import build_comparison
-from explanation_service import explain_prediction
+from clinical_reference import build_comparison, build_talking_points
+from explanation_service import explain_prediction, score_tier
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "models" / "heart_model.joblib"
@@ -154,6 +154,8 @@ def index():
         values, FEATURES, age=values["age"]
     )
     explanation = explain_prediction(pipeline, row, FEATURES)
+    score = score_tier(explanation["probability_class1"]) if explanation else None
+    talking_points = build_talking_points(comparison)
 
     return render_template(
         "result.html",
@@ -162,9 +164,12 @@ def index():
         prediction=prediction,
         labels=LABELS,
         age=int(values["age"]),
+        sex=int(values["sex"]),
         comparison=comparison,
         comparison_summary=comparison_summary,
         explanation=explanation,
+        score=score,
+        talking_points=talking_points,
     )
 
 

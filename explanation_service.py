@@ -81,3 +81,17 @@ def explain_prediction(pipeline, row_df, features, top_n=5):
         "contributions": ranked,
         "top_contributions": ranked[:top_n],
     }
+
+
+# Visualization-only tiering of the model's own (uncalibrated) score. These
+# cut points are not a clinical risk scale -- they just give the UI three
+# bands to color the gauge with. 33/66 are arbitrary thirds, not a guideline.
+def score_tier(probability_class1):
+    pct = probability_class1 * 100
+    if pct < 33:
+        tier = "low"
+    elif pct < 66:
+        tier = "moderate"
+    else:
+        tier = "high"
+    return {"tier": tier, "pct": round(pct, 1)}

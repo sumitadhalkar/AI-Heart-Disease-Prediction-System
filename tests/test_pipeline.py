@@ -286,7 +286,8 @@ class TestFlaskRoutes:
                 return  # model unavailable in this environment
             text = response.data.decode("utf-8")
             assert "Why Did the Model Produce This Result?" in text
-            assert "Model internal score for class 1" in text
+            assert "Model Score" in text
+            assert "Uncalibrated model confidence" in text
 
     def test_invalid_age_rejected(self):
         """Non-numeric age should be rejected."""
