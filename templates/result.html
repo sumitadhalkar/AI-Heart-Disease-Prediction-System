@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prediction Result</title>
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;650&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <!-- Shared icon sprite (referenced via <use>) -->
@@ -36,201 +38,214 @@
   </svg>
 
   <main class="container report">
+    <header class="masthead">
+      <div class="masthead-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 12h4l2-5 4 10 2-5h6" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+        <div>
+          <h1>Cardiovascular Assessment Report</h1>
+          <p class="masthead-sub">Illustrative model output &mdash; not an actual patient assessment</p>
+        </div>
+      </div>
+    </header>
 
-    <!-- Top stat strip -->
-    <section class="stat-strip">
-      <div class="stat-box">
-        <span class="stat-label">Age</span>
-        <span class="stat-value">{{ age }}</span>
+    <section class="report-meta">
+      <div class="report-meta-item">
+        <span class="report-meta-label">Age</span>
+        <span class="report-meta-value">{{ age }}</span>
       </div>
-      <div class="stat-box">
-        <span class="stat-label">Sex</span>
-        <span class="stat-value">{{ "Male" if sex == 1 else "Female" }}</span>
+      <div class="report-meta-item">
+        <span class="report-meta-label">Sex</span>
+        <span class="report-meta-value">{{ "Male" if sex == 1 else "Female" }}</span>
       </div>
-      <div class="stat-box">
-        <span class="stat-label">Output Class</span>
-        <span class="stat-value">{{ prediction }}</span>
+      <div class="report-meta-item">
+        <span class="report-meta-label">Output class</span>
+        <span class="report-meta-value">{{ prediction }}</span>
       </div>
       {% if score %}
-      <div class="stat-box">
-        <span class="stat-label">Model Score</span>
-        <span class="stat-value score-tier-{{ score.tier }}">{{ score.pct }}%</span>
+      <div class="report-meta-item">
+        <span class="report-meta-label">Model score</span>
+        <span class="report-meta-value">{{ score.pct }}%</span>
       </div>
       {% endif %}
     </section>
 
-    <!-- Hero: prediction + score gauge -->
-    <section class="result-card hero-card">
-      <div class="hero-grid">
-        <div class="hero-text">
-          <div class="result-icon {% if prediction == 1 %}danger{% else %}success{% endif %}">
-            {% if prediction == 1 %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            {% else %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            {% endif %}
-          </div>
-          <h2>{{ result_title }}</h2>
-          <p>{{ result_message }}</p>
-          <p class="class-code">Output class: {{ prediction }}</p>
+    <section class="monitor-section">
+      <div class="verdict">
+        <div class="verdict-icon {% if prediction == 1 %}danger{% else %}success{% endif %}">
+          {% if prediction == 1 %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="100%" height="100%">
+              <path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="100%" height="100%">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          {% endif %}
         </div>
-
-        {% if score %}
-        <div class="hero-gauge">
-          <div class="score-ring score-tier-{{ score.tier }}" style="--pct: {{ score.pct }};">
-            <div class="score-ring-inner">
-              <span class="score-ring-value">{{ score.pct }}%</span>
-              <span class="score-ring-caption">Model Score</span>
-            </div>
-          </div>
-          <span class="score-tier-badge score-tier-{{ score.tier }}">{{ score.tier }} model score</span>
-
-          <div class="risk-meter">
-            <div class="risk-meter-track">
-              <div class="risk-meter-pointer" style="left: {{ score.pct }}%;"></div>
-            </div>
-            <div class="risk-meter-labels">
-              <span>Low</span>
-              <span>Moderate</span>
-              <span>High</span>
-            </div>
-          </div>
-
-          <p class="disclaimer-note">
-            Uncalibrated model confidence, not a validated clinical
-            probability. See evaluation metrics on the home page.
-          </p>
-        </div>
-        {% endif %}
+        <h2>{{ result_title }}</h2>
+        <p>{{ result_message }}</p>
+        <p class="class-code">Output class: {{ prediction }}</p>
       </div>
+
+      {% if score %}
+      {% set circumference = 439.8 %}
+      {% set target_offset = (circumference * (1 - score.pct / 100))|round(2) %}
+      <div class="monitor">
+        <svg class="monitor-trace" viewBox="0 0 400 48" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 24 H60 L72 8 L84 40 L96 24 H160 L172 14 L184 30 L196 22 H260 L272 6 L284 42 L296 24 H400"></path>
+        </svg>
+
+        <div class="monitor-ring-wrap">
+          <svg viewBox="0 0 160 160">
+            <circle class="monitor-ring-track" cx="80" cy="80" r="70"></circle>
+            <circle class="monitor-ring-value tier-{{ score.tier }}" cx="80" cy="80" r="70"
+                    stroke-dasharray="{{ circumference }}"
+                    stroke-dashoffset="{{ target_offset }}"
+                    data-target-offset="{{ target_offset }}"></circle>
+          </svg>
+          <div class="monitor-readout">
+            <span class="monitor-readout-value">{{ score.pct }}%</span>
+            <span class="monitor-readout-caption">Model score</span>
+          </div>
+        </div>
+
+        <span class="monitor-tier tier-{{ score.tier }}">{{ score.tier }} model score</span>
+
+        <div class="monitor-scale">
+          <div class="monitor-scale-track">
+            <div class="monitor-scale-fill" style="width: {{ score.pct }}%;"></div>
+          </div>
+          <div class="monitor-scale-labels">
+            <span>Low</span>
+            <span>Moderate</span>
+            <span>High</span>
+          </div>
+        </div>
+
+        <p class="monitor-caption">
+          Uncalibrated model confidence, not a validated clinical probability.
+          See evaluation metrics on the home page.
+        </p>
+      </div>
+      {% endif %}
     </section>
 
-    <!-- Why this result -->
     {% if explanation %}
-    <section class="result-card">
-      <h3 class="section-title" style="margin-top: 0;">Why Did the Model Produce This Result?</h3>
-      <p>
+    <section class="report-section">
+      <h3 class="report-section-title">Why did the model produce this result?</h3>
+      <p class="report-section-lede">
         This model is a logistic regression, so its score is an exact sum of
-        each input's contribution. Below are the
-        {{ explanation.top_contributions|length }} inputs that pushed this
-        specific prediction the most, calculated directly from the trained
-        model's coefficients for your submitted values &mdash; not a generic
-        example and not a statement about medical causation.
+        each input's contribution. Ranked below are the inputs that pushed
+        this specific prediction the most, calculated directly from the
+        trained model's coefficients for your submitted values &mdash; not a
+        generic example and not a statement about medical causation.
       </p>
 
-      <div class="contribution-grid">
+      <ol class="contribution-list">
         {% for c in explanation.top_contributions %}
-        <div class="contribution-card contribution-{{ c.direction }}">
-          <span class="contribution-arrow">
-            {% if c.direction == "increases" %}&#9650;{% elif c.direction == "decreases" %}&#9660;{% else %}&#8212;{% endif %}
-          </span>
+        <li class="contribution-row">
+          <span class="contribution-rank">{{ "%02d"|format(loop.index) }}</span>
           <div>
             <div class="contribution-feature">{{ labels.get(c.feature, c.feature) }}</div>
             <div class="contribution-value">Your value: {{ c.raw_value|round(2) }}</div>
-            <div class="contribution-direction-text">
-              {% if c.direction == "increases" %}
-                Increases the model's score toward class 1
-              {% elif c.direction == "decreases" %}
-                Decreases the model's score toward class 1
-              {% else %}
-                Negligible effect
-              {% endif %}
-            </div>
           </div>
-        </div>
+          <span class="contribution-direction {{ c.direction }}">
+            {% if c.direction == "increases" %}
+              &#9650; toward class 1
+            {% elif c.direction == "decreases" %}
+              &#9660; toward class 0
+            {% else %}
+              &#8212; negligible
+            {% endif %}
+          </span>
+        </li>
         {% endfor %}
-      </div>
+      </ol>
 
       <p class="disclaimer-note">
         These are contributions to <em>this model's</em> internal score for
         <em>this input</em>, derived mathematically from its fitted
         coefficients. They are not proof of a causal relationship, not a
-        ranking of general cardiovascular risk factors, and not a
-        clinical diagnosis.
+        ranking of general cardiovascular risk factors, and not a clinical
+        diagnosis.
       </p>
     </section>
     {% endif %}
 
-    <!-- Measurement insights -->
     {% if comparison %}
-    <section class="result-card">
-      <h3 class="section-title" style="margin-top: 0;">Measurement Insights</h3>
-      <p>
+    <section class="report-section">
+      <h3 class="report-section-title">Measurement insights</h3>
+      <p class="report-section-lede">
         Each value you entered, what it measures, and how it compares to
-        standard adult clinical reference ranges. Age ({{ age }} years) is
-        only used to adjust the maximum-heart-rate comparison (the standard
-        "220 minus age" estimate) &mdash; the other reference ranges are
-        general adult guideline thresholds and do not change with age or sex.
+        standard adult clinical reference ranges. Age ({{ age }} years) only
+        adjusts the maximum-heart-rate comparison (the standard "220 minus
+        age" estimate) &mdash; the other reference ranges are general adult
+        guideline thresholds and do not change with age or sex.
       </p>
 
-      <p class="comparison-summary">
+      <p class="summary-line">
         Of {{ comparison_summary.total_judged }} measurements compared
         against a reference range:
-        <strong class="status-normal">{{ comparison_summary.normal_count }} normal</strong>,
-        <strong class="status-borderline">{{ comparison_summary.borderline_count }} borderline</strong>,
-        <strong class="status-elevated">{{ comparison_summary.elevated_count }} elevated</strong>.
+        <span class="tag tag-normal">{{ comparison_summary.normal_count }} normal</span>
+        <span class="tag tag-borderline">{{ comparison_summary.borderline_count }} borderline</span>
+        <span class="tag tag-elevated">{{ comparison_summary.elevated_count }} elevated</span>
       </p>
 
       {% for group_status in ["elevated", "borderline", "normal", "info"] %}
         {% set group_rows = comparison|selectattr("status", "equalto", group_status)|list %}
         {% if group_rows %}
-        <h4 class="insight-group-title status-{{ group_status }}">
-          {{ group_status|capitalize }} ({{ group_rows|length }})
+        <h4 class="insight-heading">
+          <span class="tag tag-{{ group_status }}">{{ group_status|capitalize }}</span>
+          {{ group_rows|length }} measurement{{ "s" if group_rows|length != 1 else "" }}
         </h4>
-        <div class="measurement-grid">
-          {% for row in group_rows %}
-          <div class="measurement-card status-border-{{ row.status }}">
-            <div class="measurement-card-header">
-              <svg class="card-icon"><use href="#icon-{{ row.group.replace('_test', '') if row.group == 'cardiac_test' else row.group }}"></use></svg>
-              <span class="measurement-label">
-                {{ labels.get(row.feature, row.feature) }}
-                {% if row.age_adjusted %}<span class="age-badge">age-adjusted</span>{% endif %}
-              </span>
-              <span class="status-badge status-{{ row.status }}">{{ row.status }}</span>
+        {% for row in group_rows %}
+        <div class="insight-row">
+          <svg class="card-icon"><use href="#icon-{{ row.group.replace('_test', '') if row.group == 'cardiac_test' else row.group }}"></use></svg>
+          <div class="insight-main">
+            <div class="insight-label">
+              {{ labels.get(row.feature, row.feature) }}
+              {% if row.age_adjusted %}<span class="age-badge">age-adjusted</span>{% endif %}
             </div>
-            <div class="measurement-value">{{ row.your_value }}</div>
-            <p class="measurement-description">{{ row.description }}</p>
-
+            <p class="insight-description">{{ row.description }}</p>
+          </div>
+          <div class="insight-value-col">
+            <div class="insight-value">{{ row.your_value }}</div>
             {% if row.gauge %}
-            <div class="mini-gauge">
-              <div class="mini-gauge-track" style="background: {{ row.gauge.track_gradient }};">
-                <div class="mini-gauge-marker" style="left: {{ row.gauge.marker_pct }}%;"></div>
-              </div>
+            <div class="mini-gauge-track" style="background: {{ row.gauge.track_gradient }};">
+              <div class="mini-gauge-marker" style="left: {{ row.gauge.marker_pct }}%;"></div>
             </div>
             {% endif %}
-
-            <p class="measurement-reference">{{ row.reference }}</p>
+            <p class="insight-reference">{{ row.reference }}</p>
           </div>
-          {% endfor %}
+          <span class="tag tag-{{ row.status }}">{{ row.status }}</span>
         </div>
+        {% endfor %}
         {% endif %}
       {% endfor %}
     </section>
     {% endif %}
 
-    <!-- Talk to your doctor -->
     {% if talking_points %}
-    <section class="result-card">
-      <h3 class="section-title" style="margin-top: 0;">Talk to Your Doctor About</h3>
-      <p>
+    <section class="report-section">
+      <h3 class="report-section-title">Talk to your doctor about</h3>
+      <p class="report-section-lede">
         Use these as a starting point for a conversation with a qualified
         healthcare professional &mdash; none of these are instructions to
         take a specific medication or treatment.
       </p>
-      <ul class="talking-point-list">
+      <ul class="talk-list">
         {% for point in talking_points %}
-        <li class="talking-point-item priority-{{ point.priority }}">
+        <li class="talk-row priority-{{ point.priority }}">
           <svg class="card-icon">
             <use href="#icon-{{ 'alert' if point.priority >= 2 else 'check' }}"></use>
           </svg>
           <div>
-            <div class="talking-point-label">{{ point.label }}</div>
-            <div class="talking-point-note">{{ point.note }}</div>
+            <div class="talk-label">{{ point.label }}</div>
+            <div class="talk-note">{{ point.note }}</div>
           </div>
         </li>
         {% endfor %}
@@ -239,13 +254,17 @@
     {% endif %}
 
     <section class="notice notice-safety">
-      <strong>Medical limitation</strong>
-      <p>This result is not a diagnosis, a validated risk estimate, or proof that heart disease is present or absent. The comparisons and talking points above use general adult clinical guideline thresholds, not a personalized risk assessment &mdash; they do not account for medications, other conditions, or individual variation. A qualified healthcare professional must assess any health concerns using appropriate clinical evaluation.</p>
+      <div>
+        <strong>Medical limitation</strong>
+        <p>This result is not a diagnosis, a validated risk estimate, or proof that heart disease is present or absent. The comparisons and talking points above use general adult clinical guideline thresholds, not a personalized risk assessment &mdash; they do not account for medications, other conditions, or individual variation. A qualified healthcare professional must assess any health concerns using appropriate clinical evaluation.</p>
+      </div>
     </section>
 
     <a href="{{ url_for('index') }}" class="btn-secondary">
-      ← Return to input form
+      Return to input form
     </a>
   </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

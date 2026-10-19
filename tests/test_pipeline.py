@@ -285,8 +285,8 @@ class TestFlaskRoutes:
             if response.status_code != 200:
                 return  # model unavailable in this environment
             text = response.data.decode("utf-8")
-            assert "Why Did the Model Produce This Result?" in text
-            assert "Model Score" in text
+            assert "Why did the model produce this result?" in text
+            assert "Model score" in text
             assert "Uncalibrated model confidence" in text
 
     def test_invalid_age_rejected(self):
@@ -381,7 +381,7 @@ class TestDatasetInfoRendering:
             )
             count = model_bundle.get("instance_count", 303)
             assert label in text
-            assert f"Instances: {count}" in text
+            assert f"{count} instances" in text
 
 
 class TestModelPersistence:

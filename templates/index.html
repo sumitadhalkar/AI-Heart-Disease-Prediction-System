@@ -4,239 +4,231 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Heart Disease AI - Educational Prototype</title>
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;650&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <main class="container">
-    <header class="main-header">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    <header class="masthead">
+      <div class="masthead-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 12h4l2-5 4 10 2-5h6" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="12" cy="12" r="10"></circle>
         </svg>
+        <div>
+          <h1>Heart Disease AI</h1>
+          <p class="masthead-sub">Educational prototype &mdash; estimates patterns associated with heart disease from clinical inputs</p>
+        </div>
       </div>
-      <div>
-        <h1>Heart Disease AI</h1>
-        <p>Educational prototype - Estimates patterns associated with heart disease using machine learning</p>
+      <div class="masthead-meta">
+        Logistic regression model<br>
+        UCI Heart Disease dataset
       </div>
     </header>
 
     <section class="notice notice-warning">
-      <strong>Important:</strong>
-      <p>This tool is not medically validated and must not be used to diagnose, screen, or make treatment decisions. It is an educational prototype only.</p>
+      <div>
+        <strong>Not for clinical use.</strong>
+        <p>This tool is not medically validated and must not be used to diagnose, screen, or make treatment decisions. It is an educational prototype only.</p>
+      </div>
     </section>
 
     {% if error %}
-      <div class="error" role="alert">
-        {{ error }}
-      </div>
+      <div class="form-error" role="alert">{{ error }}</div>
     {% endif %}
 
-    <form method="POST" action="{{ url_for('index') }}" class="form-section">
-      <h2 class="section-title">Patient Health Parameters</h2>
+    <form method="POST" action="{{ url_for('index') }}" class="form-sheet">
+      <h2 class="form-sheet-title">Patient health parameters</h2>
 
-      <div class="form-grid">
-        <!-- Demographics Group -->
-        <div class="group-panel">
-          <span class="group-title">Demographics</span>
-          <div class="input-wrapper">
-            <label class="form-label" for="age">Age (years)</label>
+      <div class="field-group">
+        <p class="field-group-title">Demographics</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="age">Age (years)</label>
             <input id="age" name="age" type="number"
                    min="1" max="120" required
-                   class="form-control"
+                   class="field-control"
                    value="{{ form.get('age', '') if form else '' }}">
-            <small>Enter age in years (1-120)</small>
+            <span class="field-hint">1&ndash;120</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="sex">Sex</label>
-            <select id="sex" name="sex" required class="form-control">
+          <div class="field">
+            <label for="sex">Sex</label>
+            <select id="sex" name="sex" required class="field-control">
               <option value="">Select</option>
-              <option value="0" {% if form and form.get('sex') == '0' %}selected{% endif %}>0 — Female</option>
-              <option value="1" {% if form and form.get('sex') == '1' %}selected{% endif %}>1 — Male</option>
+              <option value="0" {% if form and form.get('sex') == '0' %}selected{% endif %}>0 &mdash; Female</option>
+              <option value="1" {% if form and form.get('sex') == '1' %}selected{% endif %}>1 &mdash; Male</option>
             </select>
-            <small>Sex code as used in dataset</small>
+            <span class="field-hint">Sex code as used in dataset</span>
           </div>
         </div>
+      </div>
 
-        <!-- Chest Pain & Vital Signs Group -->
-        <div class="group-panel">
-          <span class="group-title">Chest Pain & Vital Signs</span>
-          <div class="input-wrapper">
-            <label class="form-label" for="cp">Chest pain type</label>
-            <select id="cp" name="cp" required class="form-control">
+      <div class="field-group">
+        <p class="field-group-title">Chest pain &amp; vital signs</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="cp">Chest pain type</label>
+            <select id="cp" name="cp" required class="field-control">
               <option value="">Select</option>
-              <option value="1" {% if form and form.get('cp') == '1' %}selected{% endif %}>1 — Typical angina</option>
-              <option value="2" {% if form and form.get('cp') == '2' %}selected{% endif %}>2 — Atypical angina</option>
-              <option value="3" {% if form and form.get('cp') == '3' %}selected{% endif %}>3 — Non-anginal pain</option>
-              <option value="4" {% if form and form.get('cp') == '4' %}selected{% endif %}>4 — Asymptomatic</option>
+              <option value="1" {% if form and form.get('cp') == '1' %}selected{% endif %}>1 &mdash; Typical angina</option>
+              <option value="2" {% if form and form.get('cp') == '2' %}selected{% endif %}>2 &mdash; Atypical angina</option>
+              <option value="3" {% if form and form.get('cp') == '3' %}selected{% endif %}>3 &mdash; Non-anginal pain</option>
+              <option value="4" {% if form and form.get('cp') == '4' %}selected{% endif %}>4 &mdash; Asymptomatic</option>
             </select>
-            <small>Type of chest pain experienced</small>
+            <span class="field-hint">Type of chest pain experienced</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="trestbps">Resting blood pressure (mm Hg)</label>
+          <div class="field">
+            <label for="trestbps">Resting blood pressure</label>
             <input id="trestbps" name="trestbps" type="number"
                    min="50" max="300" required
-                   class="form-control"
+                   class="field-control"
                    value="{{ form.get('trestbps', '') if form else '' }}">
-            <small>Resting blood pressure in mm Hg</small>
+            <span class="field-hint">mm Hg, 50&ndash;300</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="chol">Cholesterol (mg/dL)</label>
+          <div class="field">
+            <label for="chol">Cholesterol</label>
             <input id="chol" name="chol" type="number"
                    min="50" max="800" required
-                   class="form-control"
+                   class="field-control"
                    value="{{ form.get('chol', '') if form else '' }}">
-            <small>Serum cholesterol in mg/dL</small>
+            <span class="field-hint">Serum cholesterol, mg/dL</span>
           </div>
         </div>
+      </div>
 
-        <!-- Fasting & ECG Group -->
-        <div class="group-panel">
-          <span class="group-title">Fasting & ECG</span>
-          <div class="input-wrapper">
-            <label class="form-label" for="fbs">Fasting blood sugar</label>
-            <select id="fbs" name="fbs" required class="form-control">
+      <div class="field-group">
+        <p class="field-group-title">Fasting &amp; ECG</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="fbs">Fasting blood sugar</label>
+            <select id="fbs" name="fbs" required class="field-control">
               <option value="">Select</option>
-              <option value="0" {% if form and form.get('fbs') == '0' %}selected{% endif %}>0 — ≤ 120 mg/dL</option>
-              <option value="1" {% if form and form.get('fbs') == '1' %}selected{% endif %}>1 — > 120 mg/dL</option>
+              <option value="0" {% if form and form.get('fbs') == '0' %}selected{% endif %}>0 &mdash; &le; 120 mg/dL</option>
+              <option value="1" {% if form and form.get('fbs') == '1' %}selected{% endif %}>1 &mdash; &gt; 120 mg/dL</option>
             </select>
-            <small>Fasting blood sugar indicator</small>
+            <span class="field-hint">Fasting blood sugar indicator</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="restecg">Resting ECG results</label>
-            <select id="restecg" name="restecg" required class="form-control">
+          <div class="field">
+            <label for="restecg">Resting ECG results</label>
+            <select id="restecg" name="restecg" required class="field-control">
               <option value="">Select</option>
-              <option value="0" {% if form and form.get('restecg') == '0' %}selected{% endif %}>0 — Normal</option>
-              <option value="1" {% if form and form.get('restecg') == '1' %}selected{% endif %}>1 — ST-T abnormality</option>
-              <option value="2" {% if form and form.get('restecg') == '2' %}selected{% endif %}>2 — LV hypertrophy</option>
+              <option value="0" {% if form and form.get('restecg') == '0' %}selected{% endif %}>0 &mdash; Normal</option>
+              <option value="1" {% if form and form.get('restecg') == '1' %}selected{% endif %}>1 &mdash; ST-T abnormality</option>
+              <option value="2" {% if form and form.get('restecg') == '2' %}selected{% endif %}>2 &mdash; LV hypertrophy</option>
             </select>
-            <small>Resting electrocardiographic results</small>
+            <span class="field-hint">Resting electrocardiographic result</span>
           </div>
         </div>
+      </div>
 
-        <!-- Heart Rate & Angina Group -->
-        <div class="group-panel">
-          <span class="group-title">Heart Rate & Angina</span>
-          <div class="input-wrapper">
-            <label class="form-label" for="thalach">Maximum heart rate achieved</label>
+      <div class="field-group">
+        <p class="field-group-title">Heart rate &amp; angina</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="thalach">Maximum heart rate achieved</label>
             <input id="thalach" name="thalach" type="number"
                    min="30" max="250" required
-                   class="form-control"
+                   class="field-control"
                    value="{{ form.get('thalach', '') if form else '' }}">
-            <small>Maximum heart rate achieved during exercise</small>
+            <span class="field-hint">bpm, during exercise</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="exang">Exercise-induced angina</label>
-            <select id="exang" name="exang" required class="form-control">
+          <div class="field">
+            <label for="exang">Exercise-induced angina</label>
+            <select id="exang" name="exang" required class="field-control">
               <option value="">Select</option>
-              <option value="0" {% if form and form.get('exang') == '0' %}selected{% endif %}>0 — No</option>
-              <option value="1" {% if form and form.get('exang') == '1' %}selected{% endif %}>1 — Yes</option>
+              <option value="0" {% if form and form.get('exang') == '0' %}selected{% endif %}>0 &mdash; No</option>
+              <option value="1" {% if form and form.get('exang') == '1' %}selected{% endif %}>1 &mdash; Yes</option>
             </select>
-            <small>Exercise-induced angina</small>
+            <span class="field-hint">Chest pain triggered by exercise</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="oldpeak">Oldpeak (ST depression)</label>
+          <div class="field">
+            <label for="oldpeak">Oldpeak (ST depression)</label>
             <input id="oldpeak" name="oldpeak" type="number"
                    min="-5" max="15" step="any" required
-                   class="form-control"
+                   class="field-control"
                    value="{{ form.get('oldpeak', '') if form else '' }}">
-            <small>ST depression induced by exercise relative to rest</small>
+            <span class="field-hint">Relative to rest</span>
           </div>
         </div>
+      </div>
 
-        <!-- ST Slope & Vessels Group -->
-        <div class="group-panel">
-          <span class="group-title">ST Segment & Vessels</span>
-          <div class="input-wrapper">
-            <label class="form-label" for="slope">Peak exercise ST slope</label>
-            <select id="slope" name="slope" required class="form-control">
+      <div class="field-group">
+        <p class="field-group-title">ST segment &amp; vessels</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="slope">Peak exercise ST slope</label>
+            <select id="slope" name="slope" required class="field-control">
               <option value="">Select</option>
-              <option value="1" {% if form and form.get('slope') == '1' %}selected{% endif %}>1 — Upsloping</option>
-              <option value="2" {% if form and form.get('slope') == '2' %}selected{% endif %}>2 — Flat</option>
-              <option value="3" {% if form and form.get('slope') == '3' %}selected{% endif %}>3 — Downsloping</option>
+              <option value="1" {% if form and form.get('slope') == '1' %}selected{% endif %}>1 &mdash; Upsloping</option>
+              <option value="2" {% if form and form.get('slope') == '2' %}selected{% endif %}>2 &mdash; Flat</option>
+              <option value="3" {% if form and form.get('slope') == '3' %}selected{% endif %}>3 &mdash; Downsloping</option>
             </select>
-            <small>Slope of the peak exercise ST segment</small>
+            <span class="field-hint">Slope of the peak exercise ST segment</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="ca">Major vessels (ca)</label>
-            <select id="ca" name="ca" required class="form-control">
+          <div class="field">
+            <label for="ca">Major vessels</label>
+            <select id="ca" name="ca" required class="field-control">
               <option value="">Select</option>
               <option value="0" {% if form and form.get('ca') == '0' %}selected{% endif %}>0</option>
               <option value="1" {% if form and form.get('ca') == '1' %}selected{% endif %}>1</option>
               <option value="2" {% if form and form.get('ca') == '2' %}selected{% endif %}>2</option>
               <option value="3" {% if form and form.get('ca') == '3' %}selected{% endif %}>3</option>
             </select>
-            <small>Number of major vessels colored by fluoroscopy</small>
+            <span class="field-hint">Colored by fluoroscopy, 0&ndash;3</span>
           </div>
 
-          <div class="input-wrapper">
-            <label class="form-label" for="thal">Thalassemia</label>
-            <select id="thal" name="thal" required class="form-control">
+          <div class="field">
+            <label for="thal">Thalassemia</label>
+            <select id="thal" name="thal" required class="field-control">
               <option value="">Select</option>
-              <option value="3" {% if form and form.get('thal') == '3' %}selected{% endif %}>3 — Normal</option>
-              <option value="6" {% if form and form.get('thal') == '6' %}selected{% endif %}>6 — Fixed defect</option>
-              <option value="7" {% if form and form.get('thal') == '7' %}selected{% endif %}>7 — Reversible defect</option>
+              <option value="3" {% if form and form.get('thal') == '3' %}selected{% endif %}>3 &mdash; Normal</option>
+              <option value="6" {% if form and form.get('thal') == '6' %}selected{% endif %}>6 &mdash; Fixed defect</option>
+              <option value="7" {% if form and form.get('thal') == '7' %}selected{% endif %}>7 &mdash; Reversible defect</option>
             </select>
-            <small>Thalassemia category</small>
+            <span class="field-hint">Thalassemia stress test category</span>
           </div>
         </div>
       </div>
 
       <button type="submit" class="btn-primary">
-        Run Model Prediction
+        Run model prediction
       </button>
     </form>
 
     {% if model_bundle %}
-    <section class="info-section">
-      <h3 class="section-title" style="margin-top: 0;">Model Information</h3>
-      <div class="info-grid">
-        <div class="info-card">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2" stroke-width="1.5" stroke-linecap="round"></path>
-              <circle cx="10" cy="7" r="4"></circle>
-            </svg>
-          </div>
+    <section class="model-info">
+      <h3 class="model-info-title">Model information</h3>
+      <div class="model-info-grid">
+        <div class="model-info-item">
           <h4>Algorithm</h4>
-          <p>Logistic Regression with L2 regularization</p>
+          <p>Logistic regression with L2 regularization, balanced class weights.</p>
         </div>
 
-        <div class="info-card">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="1" y="3" width="15" height="13" rx="2" ry="2"></rect>
-              <path d="M7 12h6m-5 3h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6.586l-1.414-1.414A2.5 2.5 0 0 0 2 6.414V3a2 2 0 0 1 2-2h2v7.586l2.732-2.732a2.5 2.5 0 0 1 1.133 1.133l-2.447 2.447l2.032 2.032a2.5 2.5 0 0 1-.678.893l-2.636 2.636a2.5 2.5 0 0 1-.27-.3l2.568-2.568l-2.05-2.05a2.5 2.5 0 0 1 .3-.678l2.636-2.636a2.5 2.5 0 0 1 1.133-.133l2.732 2.732V21z" stroke-width="1.5" stroke-linecap="round"></path>
-            </svg>
-          </div>
+        <div class="model-info-item">
           <h4>Dataset</h4>
           <p>{{ model_bundle.get('dataset_label', 'UCI Heart Disease Repository (Cleveland database)') }}</p>
-          <p>Instances: {{ model_bundle.get('instance_count', 303) }} | Features: {{ model_bundle.get('features', [])|length or 13 }}</p>
+          <p>{{ model_bundle.get('instance_count', 303) }} instances &middot; {{ model_bundle.get('features', [])|length or 13 }} features</p>
         </div>
 
-        <div class="info-card">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2v4l2 5h4l2-5h6l-7 11-7-11h6l2 5h2l2-5h-6l-2 5h-6l-2-5H7l2 5H4l2-5H2l7-11 7 11h6z" stroke-width="1.5" stroke-linecap="round"></path>
-            </svg>
-          </div>
-          <h4>Training Metrics (held-out test set)</h4>
-          <ul style="padding-left: 20px; margin-bottom: 0">
-            <li>Accuracy: 86.9%</li>
-            <li>Precision: 81.2%</li>
-            <li>Recall: 92.9%</li>
-            <li>F1-score: 86.7%</li>
-            <li>ROC-AUC: 95.0%</li>
+        <div class="model-info-item">
+          <h4>Training metrics (held-out test set)</h4>
+          <ul>
+            <li><span>Accuracy</span><span>86.9%</span></li>
+            <li><span>Precision</span><span>81.2%</span></li>
+            <li><span>Recall</span><span>92.9%</span></li>
+            <li><span>F1-score</span><span>86.7%</span></li>
+            <li><span>ROC-AUC</span><span>95.0%</span></li>
           </ul>
-          <p style="font-size: 0.8rem; color: #666; margin-top: 8px;">Note: 20% hold-out test set, stratified split, random_state=42</p>
+          <p class="model-info-footnote">20% stratified hold-out split, random_state=42</p>
         </div>
       </div>
     </section>
